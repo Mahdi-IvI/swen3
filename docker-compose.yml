@@ -2,14 +2,23 @@ services:
   postgres:
     image: postgres:15
     container_name: dsm_postgres
+
     environment:
       POSTGRES_DB: dsm
       POSTGRES_USER: dsmuser
       POSTGRES_PASSWORD: dsmpassword
+
     ports:
       - "5432:5432"
+
     volumes:
       - dsm_data:/var/lib/postgresql/data
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dsmuser -d dsm"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   dsm_data:
