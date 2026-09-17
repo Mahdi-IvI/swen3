@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: dsm_postgres
+    environment:
+      POSTGRES_DB: dsm
+      POSTGRES_USER: dsmuser
+      POSTGRES_PASSWORD: dsmpassword
+    ports:
+      - "5432:5432"
+    volumes:
+      - dsm_data:/var/lib/postgresql/data
+
+volumes:
+  dsm_data:
