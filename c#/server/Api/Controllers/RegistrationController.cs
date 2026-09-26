@@ -1,27 +1,52 @@
+using Api.Services;
+using Dal;
 using Microsoft.AspNetCore.Mvc;
+using Models;
 
 namespace Api.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class RegistrationController : ControllerBase
+public class RegistrationController(IUserRepository users, IPasswordHashingService passwordHashing) : ControllerBase
 {
     [HttpPost(Name = "RegisterUser")]
-    public ActionResult<RegistrationResponse> Register(RegistrationRequest request)
+    public async Task<ActionResult<RegistrationResponse>> Register(RegistrationRequest request)
     {
-        if (request.Password != request.ConfirmPassword)
-        {
-            return BadRequest("Password and password conformation don't match");
-        }
+        if (string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Email) ||
+            string.IsNullOrWhiteSpace(request.Password))
+            return BadRequest("Username, email and password are required");
 
-        var response = new RegistrationResponse
+        if (request.Password != request.ConfirmPassword)
+            return BadRequest("Password and password confirmation don't match");
+
+        if (await users.FindByUsernameOrEmailAsync(request.Username, request.Email) is not null)
+            return Conflict("Username or email already exists");
+
+        var user = new User
         {
-            Username = request.Username,
-            Email = request.Email,
-            Message = "Registration request received"
+            Id = 0,
+            Username = request.Username.Trim(),
+            FirstName = request.FirstName.Trim(),
+            LastName = request.LastName.Trim(),
+            Email = request.Email.Trim(),
+            HashedPassword = passwordHashing.Hash(request.Password)
         };
 
-        return Ok(response);
+        try
+        {
+            await users.AddAsync(user);
+        }
+        catch (UserAlreadyExistsException)
+        {
+            return Conflict("Username or email already exists");
+        }
+
+        return Created(string.Empty, new RegistrationResponse
+        {
+            Username = user.Username,
+            Email = user.Email,
+            Message = "Registration successful"
+        });
     }
 }
 
