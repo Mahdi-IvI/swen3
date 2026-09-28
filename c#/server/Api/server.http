@@ -1,5 +1,6 @@
 @server_HostAddress = http://localhost:5176
-@token = 
+@token = token
+@documentId = 1
 
 POST {{server_HostAddress}}/api/auth/register
 Content-Type: application/json
@@ -23,4 +24,43 @@ Content-Type: application/json
 
 ###
 GET {{server_HostAddress}}/api/auth/me
+Authorization: Bearer {{token}}
+
+###
+POST {{server_HostAddress}}/api/documents
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "document",
+  "description": "document description",
+  "fileName": "document.pdf"
+}
+
+###
+GET {{server_HostAddress}}/api/documents
+Authorization: Bearer {{token}}
+
+###
+GET {{server_HostAddress}}/api/documents/{{documentId}}
+Authorization: Bearer {{token}}
+
+###
+GET {{server_HostAddress}}/api/documents/search?term=Sprint
+Authorization: Bearer {{token}}
+
+###
+PUT {{server_HostAddress}}/api/documents/{{documentId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "id": {{documentId}},
+  "name": "document (updated)",
+  "description": "Updated Document",
+  "fileName": "document.pdf"
+}
+
+###
+DELETE {{server_HostAddress}}/api/documents/{{documentId}}
 Authorization: Bearer {{token}}

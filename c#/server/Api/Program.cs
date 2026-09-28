@@ -31,12 +31,14 @@ builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddScoped<IPasswordHashingService, PasswordHashingService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IDocumentService, DocumentService>();
 builder.Services.AddScoped<IUserRepository, EntityFrameworkUserRepository>();
+builder.Services.AddScoped<IDocumentRepository, EntityFrameworkDocumentRepository>();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
     options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")
-        ?? throw new InvalidOperationException("ConnectionStrings:Postgres is required."));
+                      ?? throw new InvalidOperationException("ConnectionStrings:Postgres is required."));
     if (!builder.Environment.IsDevelopment()) return; // check for development environment
     options.EnableSensitiveDataLogging();
     options.LogTo(Console.WriteLine, LogLevel.Information);

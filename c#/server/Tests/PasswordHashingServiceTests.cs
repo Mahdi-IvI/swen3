@@ -1,11 +1,11 @@
 using Api.Services;
-using Xunit;
+using NUnit.Framework;
 
 namespace Tests;
 
 public class PasswordHashingServiceTests
 {
-    [Fact]
+    [Test]
     public void VerifyCorrectPassword()
     {
         var service = new PasswordHashingService();
@@ -13,10 +13,10 @@ public class PasswordHashingServiceTests
 
         var result = service.Verify(hash, "secret123");
 
-        Assert.True(result);
+        Assert.That(result, Is.True);
     }
 
-    [Fact]
+    [Test]
     public void VerifyWrongPassword()
     {
         var service = new PasswordHashingService();
@@ -24,6 +24,6 @@ public class PasswordHashingServiceTests
 
         var result = service.Verify(hash, "wrong-password");
 
-        Assert.False(result);
+        Assert.That(result, Is.False);
     }
 }
