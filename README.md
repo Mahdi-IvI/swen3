@@ -13,9 +13,20 @@ Team project for the Software Engineering 3 course.
 - .NET SDK 10
 - Docker with Docker Compose
 
-The API runs locally and PostgreSQL runs in Docker. The database is available on host port **5433**.
+Docker Compose runs the API and PostgreSQL together. The API is available on host port **5176** and PostgreSQL on host port **5433**.
 
-## Run locally
+## Run with Docker Compose
+
+From the repository root, set a JWT signing secret of at least 32 characters, then start both containers:
+
+```bash
+export DSM_JWT_SECRET="$(openssl rand -hex 32)"
+docker compose up --build
+```
+
+The API is at `http://localhost:5176` and Swagger UI is at `http://localhost:5176/swagger`. Run `docker compose down` to stop the containers; the database volume remains available for the next run.
+
+## Run the API locally
 
 From the repository root:
 
@@ -33,7 +44,7 @@ From the repository root:
    dotnet run --project 'c#/server/Api/Api.csproj' --launch-profile http
    ```
 
-The API is at `http://localhost:5176`. Swagger UI is at `http://localhost:5176/swagger`. Use `c#/server/Api/server.http` for example requests: register or log in, copy the returned JWT into `@token`, and copy created document and folder IDs into the variables at the top.
+Use `c#/server/Api/server.http` for example requests: register or log in, copy the returned JWT into `@token`, and copy created document and folder IDs into the variables at the top. Stop the Compose API before running the API locally because both use port 5176.
 
 Run the tests with:
 

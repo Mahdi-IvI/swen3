@@ -1,4 +1,18 @@
 services:
+  api:
+    build:
+      context: ./c#/server
+      dockerfile: Api/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__Postgres: Host=postgres;Port=5432;Database=dsm;Username=dsmuser;Password=dsmpassword
+      Jwt__SecretKey: MahdiAndMarkoandKenansSecretKey!@!§$%&/()=?
+    ports:
+      - "5176:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
   postgres:
     image: postgres:15
     container_name: dsm_postgres
