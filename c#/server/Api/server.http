@@ -1,7 +1,10 @@
 @server_HostAddress = http://localhost:5176
-@token = token
+@token = paste-jwt-from-login-response
 @documentId = 1
+@folderId = 1
+@childFolderId = 2
 
+### Register
 POST {{server_HostAddress}}/api/auth/register
 Content-Type: application/json
 
@@ -13,7 +16,7 @@ Content-Type: application/json
   "lastName": "Abbasi"
 }
 
-###
+### Log in
 POST {{server_HostAddress}}/api/auth/login
 Content-Type: application/json
 
@@ -22,11 +25,62 @@ Content-Type: application/json
   "password": "password123"
 }
 
-###
+### Get profile
 GET {{server_HostAddress}}/api/auth/me
 Authorization: Bearer {{token}}
 
-###
+### Update profile
+PUT {{server_HostAddress}}/api/auth/me
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "firstName": "Mahdi",
+  "lastName": "Abbasi"
+}
+
+### Create a folder
+POST {{server_HostAddress}}/api/folders
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Projects",
+  "description": "Project documents"
+}
+
+### Create a child folder
+POST {{server_HostAddress}}/api/folders
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Folder 1",
+  "description": "Sample Description",
+  "containingFolder": {{folderId}}
+}
+
+### List folders
+GET {{server_HostAddress}}/api/folders
+Authorization: Bearer {{token}}
+
+### Get folder
+GET {{server_HostAddress}}/api/folders/{{folderId}}
+Authorization: Bearer {{token}}
+
+### Update folder
+PUT {{server_HostAddress}}/api/folders/{{childFolderId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "id": {{childFolderId}},
+  "name": "Sprint 1 updated",
+  "description": "Updated Sprint 1 materials",
+  "containingFolder": {{folderId}}
+}
+
+### Create document
 POST {{server_HostAddress}}/api/documents
 Authorization: Bearer {{token}}
 Content-Type: application/json
@@ -37,19 +91,19 @@ Content-Type: application/json
   "fileName": "document.pdf"
 }
 
-###
+### List documents
 GET {{server_HostAddress}}/api/documents
 Authorization: Bearer {{token}}
 
-###
+### Get document
 GET {{server_HostAddress}}/api/documents/{{documentId}}
 Authorization: Bearer {{token}}
 
-###
-GET {{server_HostAddress}}/api/documents/search?term=Sprint
+### Search documents
+GET {{server_HostAddress}}/api/documents/search?term=document
 Authorization: Bearer {{token}}
 
-###
+### Update document
 PUT {{server_HostAddress}}/api/documents/{{documentId}}
 Authorization: Bearer {{token}}
 Content-Type: application/json
@@ -61,6 +115,10 @@ Content-Type: application/json
   "fileName": "document.pdf"
 }
 
-###
+### Delete document
 DELETE {{server_HostAddress}}/api/documents/{{documentId}}
+Authorization: Bearer {{token}}
+
+### Delete folder
+DELETE {{server_HostAddress}}/api/folders/{{folderId}}
 Authorization: Bearer {{token}}

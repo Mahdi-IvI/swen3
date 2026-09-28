@@ -44,6 +44,7 @@ public class EntityFrameworkDocumentRepository(AppDbContext dbContext) : IDocume
         updateDocument.Name = document.Name;
         updateDocument.Description = document.Description;
         updateDocument.FileName = document.FileName;
+        updateDocument.ContainingFolder = document.ContainingFolder;
         updateDocument.Summery = document.Summery;
 
         try

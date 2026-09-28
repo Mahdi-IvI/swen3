@@ -89,6 +89,10 @@ public class DocumentsController(IDocumentService documentService, ILogger<Docum
             logger.LogWarning(e, "User {Username} tried to create a duplicate Document.", username);
             return Conflict(e.Message);
         }
+        catch (FolderNotFoundException e)
+        {
+            return NotFound(e.Message);
+        }
     }
 
     [HttpPut("{id:int}")]
@@ -118,6 +122,10 @@ public class DocumentsController(IDocumentService documentService, ILogger<Docum
         catch (DocumentNotFoundException e)
         {
             logger.LogWarning(e, "User {Username} tried to update missing document {DocumentId}.", username, id);
+            return NotFound(e.Message);
+        }
+        catch (FolderNotFoundException e)
+        {
             return NotFound(e.Message);
         }
     }
@@ -156,7 +164,8 @@ public class DocumentsController(IDocumentService documentService, ILogger<Docum
             Id = document.Id,
             Name = document.Name,
             Description = document.Description,
-            FileName = document.FileName
+            FileName = document.FileName,
+            ContainingFolder = document.ContainingFolder
         };
     }
 
@@ -168,6 +177,7 @@ public class DocumentsController(IDocumentService documentService, ILogger<Docum
             Name = dto.Name,
             Description = dto.Description,
             FileName = dto.FileName,
+            ContainingFolder = dto.ContainingFolder,
             Username = username,
             Summery = ""
         };

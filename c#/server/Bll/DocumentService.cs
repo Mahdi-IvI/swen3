@@ -4,11 +4,12 @@ using Models;
 
 namespace Bll.@new;
 
-public class DocumentService(IDocumentRepository documentRepository) : IDocumentService
+public class DocumentService(IDocumentRepository documentRepository, IFolderRepository folderRepository) : IDocumentService
 {
     public async Task<Document> InsertDocumentAsync(string username, Document newDocument)
     {
         newDocument.Username = username;
+        await ValidateFolderAsync(username, newDocument.ContainingFolder);
         try
         {
             await documentRepository.InsertDocumentAsync(username, newDocument);
@@ -33,6 +34,7 @@ public class DocumentService(IDocumentRepository documentRepository) : IDocument
     public async Task<Document> UpdateDocumentAsync(string username, Document document)
     {
         document.Username = username;
+        await ValidateFolderAsync(username, document.ContainingFolder);
 
         try
         {
@@ -81,5 +83,13 @@ public class DocumentService(IDocumentRepository documentRepository) : IDocument
     private static bool ContainsSearchText(string value, string searchText)
     {
         return value.Contains(searchText, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private async Task ValidateFolderAsync(string username, int? folderId)
+    {
+        if (folderId is int id && await folderRepository.GetFolderByIdAsync(username, id) is null)
+        {
+            throw new FolderNotFoundException($"Folder with ID '{id}' not found for user '{username}'.");
+        }
     }
 }

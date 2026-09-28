@@ -32,6 +32,33 @@ public class DocumentServiceTests
     }
 
     [Test]
+    public async Task InsertDocument_WithOwnedFolder()
+    {
+        var folderRepository = new Mock<IFolderRepository>();
+        folderRepository.Setup(r => r.GetFolderByIdAsync("mahdi", 5))
+            .ReturnsAsync(new Folder { Id = 5, Username = "mahdi", Name = "Projects", Description = "" });
+        var service = CreateService(folderRepository: folderRepository);
+        var document = CreateDocument();
+        document.ContainingFolder = 5;
+
+        var result = await service.InsertDocumentAsync("mahdi", document);
+
+        Assert.That(result.ContainingFolder, Is.EqualTo(5));
+    }
+
+    [Test]
+    public void InsertDocument_WithAnotherUsersFolder_IsRejected()
+    {
+        var documentRepository = CreateDocumentRepository();
+        var service = CreateService(documentRepository: documentRepository);
+        var document = CreateDocument();
+        document.ContainingFolder = 5;
+
+        Assert.ThrowsAsync<FolderNotFoundException>(() => service.InsertDocumentAsync("mahdi", document));
+        documentRepository.Verify(r => r.InsertDocumentAsync(It.IsAny<string>(), It.IsAny<Document>()), Times.Never);
+    }
+
+    [Test]
     public void UpdateDocument_WhenDocumentMissing()
     {
         var repository = CreateDocumentRepository();
@@ -120,10 +147,12 @@ public class DocumentServiceTests
     }
 
     private static DocumentService CreateService(
-        Mock<IDocumentRepository>? documentRepository = null)
+        Mock<IDocumentRepository>? documentRepository = null,
+        Mock<IFolderRepository>? folderRepository = null)
     {
         return new DocumentService(
-            (documentRepository ?? CreateDocumentRepository()).Object);
+            (documentRepository ?? CreateDocumentRepository()).Object,
+            (folderRepository ?? new Mock<IFolderRepository>()).Object);
     }
 
     private static Mock<IDocumentRepository> CreateDocumentRepository(List<Document>? documents = null)
