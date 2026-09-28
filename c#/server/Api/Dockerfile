@@ -1,10 +1,8 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
-WORKDIR /src
-COPY . .
-RUN dotnet publish Api/Api.csproj -c Release -o /app/publish
+COPY . /src
+RUN dotnet publish /src/Api/Api.csproj -o /out
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0
 WORKDIR /app
-COPY --from=build /app/publish .
-EXPOSE 8080
+COPY --from=build /out .
 ENTRYPOINT ["dotnet", "Api.dll"]
