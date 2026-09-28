@@ -1,6 +1,26 @@
 @server_HostAddress = http://localhost:5176
+@token = 
 
-GET {{server_HostAddress}}/weatherforecast/
-Accept: application/json
+POST {{server_HostAddress}}/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "mahdi",
+  "password": "password123",
+  "email": "mahdi@dom.com",
+  "firstName": "Mahdi",
+  "lastName": "Abbasi"
+}
 
 ###
+POST {{server_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "mahdi",
+  "password": "password123"
+}
+
+###
+GET {{server_HostAddress}}/api/auth/me
+Authorization: Bearer {{token}}

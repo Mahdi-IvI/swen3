@@ -1,26 +1,50 @@
 using Microsoft.EntityFrameworkCore;
 using Models;
+using Npgsql;
 
 namespace Dal;
 
-public class EntityFrameworkUserRepository(AppDbContext db) : IUserRepository
+public class EntityFrameworkUserRepository(AppDbContext dbContext) : IUserRepository
 {
-    public Task<User?> FindByUsernameOrEmailAsync(string usernameOrEmail) => db.Users
-        .FirstOrDefaultAsync(u => u.Username.ToLower() == usernameOrEmail.ToLower() || u.Email.ToLower() == usernameOrEmail.ToLower());
+    public async Task<User?> GetUserByUsernameAsync(string username)
+    {
+        var normalizedUsername = username.ToLowerInvariant();
+        return await dbContext.Users.SingleOrDefaultAsync(u => u.Username.ToLower() == normalizedUsername);
+    }
 
-    public Task<User?> FindByUsernameOrEmailAsync(string username, string email) => db.Users
-        .FirstOrDefaultAsync(u => u.Username.ToLower() == username.ToLower() || u.Email.ToLower() == email.ToLower());
+    public Task<User?> GetUserByEmailAsync(string email)
+    {
+        var normalizedEmail = email.ToLowerInvariant();
+        return dbContext.Users.SingleOrDefaultAsync(u => u.Email.ToLower() == normalizedEmail);
+    }
 
-    public async Task AddAsync(User user)
+    public async Task InsertUserAsync(User user)
     {
         try
         {
-            db.Users.Add(user);
-            await db.SaveChangesAsync();
+            dbContext.Users.Add(user);
+            await dbContext.SaveChangesAsync();
         }
-        catch (DbUpdateException ex)
+        catch (DbUpdateException e) when (e.InnerException is PostgresException
+            { SqlState: PostgresErrorCodes.UniqueViolation })
         {
-            throw new UserAlreadyExistsException(ex);
+            throw new DuplicateKeyException("Username or email already exists.", e);
         }
+    }
+
+    public async Task UpdateUserAsync(User user)
+    {
+        var existingUser = await GetUserByUsernameAsync(user.Username);
+        if (existingUser == null)
+        {
+            throw new KeyNotFoundException($"User with username '{user.Username}' not found.");
+        }
+
+        existingUser.FirstName = user.FirstName;
+        existingUser.LastName = user.LastName;
+        existingUser.HashedPassword = user.HashedPassword;
+        existingUser.Email = user.Email;
+
+        await dbContext.SaveChangesAsync();
     }
 }
