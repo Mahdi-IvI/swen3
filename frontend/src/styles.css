@@ -1,0 +1,136 @@
+body {
+  margin: 8px !important;
+  color: #111;
+  background: #fff;
+  font: 16px Arial, sans-serif;
+}
+
+.page-shell {
+  max-width: none !important;
+  margin: 0 !important;
+}
+
+.auth-layout {
+  max-width: 360px !important;
+  margin: 0 !important;
+}
+
+.auth-card {
+  padding: 16px;
+  border: 1px solid #aaa;
+}
+
+.auth-card form,
+.auth-card label {
+  display: block;
+}
+
+.auth-card label {
+  margin: 12px 0 4px;
+}
+
+input {
+  box-sizing: border-box;
+  max-width: 100%;
+  padding: 7px;
+  border: 1px solid #888;
+  font: inherit;
+}
+
+.auth-card input {
+  width: 100%;
+}
+
+button {
+  margin-top: 12px;
+  padding: 7px 12px;
+  font: inherit;
+  cursor: pointer;
+}
+
+.submit-button {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.field-row {
+  display: flex;
+  gap: 12px;
+}
+
+.field-row > div {
+  flex: 1;
+  min-width: 0;
+}
+
+.text-button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #0645ad;
+  text-decoration: underline;
+}
+
+.error-message {
+  color: #a00;
+}
+
+.documents-page {
+  margin: 0 !important;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.document-list {
+  margin-top: 12px;
+  border: 1px solid #aaa;
+}
+
+.document-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border-bottom: 1px solid #ccc;
+}
+
+.document-row:last-child {
+  border-bottom: 0;
+}
+
+.file-icon {
+  min-width: 48px;
+  font-size: 12px;
+}
+
+.document-details {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.document-description,
+.document-folder {
+  color: #444;
+}
+
+@media (max-width: 500px) {
+  .field-row,
+  .document-row {
+    flex-wrap: wrap;
+  }
+}
