@@ -15,6 +15,8 @@ Team project for the Software Engineering 3 course.
 
 Docker Compose runs the API and PostgreSQL together. The API is available on host port **5176** and PostgreSQL on host port **5433**.
 
+In Development mode, the API creates a demo account on startup if it does not already exist: **admin** / **admin123**. 
+
 ## Run with Docker Compose
 
 From the repository root, set a JWT signing secret of at least 32 characters, then start both containers:

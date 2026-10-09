@@ -114,6 +114,21 @@ if (app.Environment.IsDevelopment())
 
     var context = services.GetRequiredService<AppDbContext>();
     context.Database.EnsureCreated();
+
+    if (!context.Users.Any(user => user.Username == "admin"))
+    {
+        var passwordHashingService = services.GetRequiredService<IPasswordHashingService>();
+        context.Users.Add(new Models.User
+        {
+            Id = 0,
+            Username = "admin",
+            FirstName = "admin",
+            LastName = "admin",
+            Email = "admin@admin.com",
+            HashedPassword = passwordHashingService.Hash("admin123")
+        });
+        context.SaveChanges();
+    }
 }
 
 app.UseExceptionHandler();

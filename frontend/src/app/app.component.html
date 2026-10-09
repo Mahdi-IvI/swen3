@@ -1,7 +1,8 @@
 <main class="page-shell">
-  <section class="auth-layout" *ngIf="screen !== 'documents'; else documentScreen">
+  <section class="auth-layout" *ngIf="screen === 'login' || screen === 'register'; else documentScreen">
     <div class="auth-card">
       <ng-container *ngIf="screen === 'login'; else registrationForm">
+        <h1 class="auth-title">Login</h1>
         <form (ngSubmit)="login()">
           <label for="login-username">Benutzername</label>
           <input id="login-username" name="username" [(ngModel)]="username" autocomplete="username" required minlength="3" maxlength="50">
@@ -13,6 +14,7 @@
         <button type="button" class="text-button" (click)="showRegister()">Registrieren</button>
       </ng-container>
       <ng-template #registrationForm>
+        <h1 class="auth-title">Registration</h1>
         <form (ngSubmit)="register()">
           <div class="field-row"><div><label for="first-name">Vorname</label><input id="first-name" name="firstName" [(ngModel)]="firstName" autocomplete="given-name" required maxlength="50"></div><div><label for="last-name">Nachname</label><input id="last-name" name="lastName" [(ngModel)]="lastName" autocomplete="family-name" required maxlength="50"></div></div>
           <label for="register-username">Benutzername</label><input id="register-username" name="username" [(ngModel)]="username" autocomplete="username" required minlength="3" maxlength="50">
@@ -28,12 +30,26 @@
 
   <ng-template #documentScreen>
     <section class="documents-page">
-      <h1>Dateien</h1>
-      <div class="toolbar"><label class="search-box"><span aria-hidden="true">Suche:</span><input type="search" name="search" [(ngModel)]="searchTerm" aria-label="Dateien durchsuchen"></label><button type="button" (click)="logout()">Abmelden</button></div>
+      <header class="page-header">
+        <h1>{{ screen === 'profile' ? 'Mein Profil' : 'Dateien' }}</h1>
+        <div class="header-actions"><button type="button" class="profile-button" *ngIf="screen === 'documents'" (click)="showProfile()">Mein Profil</button><button type="button" class="profile-button" *ngIf="screen === 'profile'" (click)="showDocuments()">Zurück zu Dateien</button><button type="button" class="logout-button" (click)="logout()">Abmelden</button></div>
+      </header>
+      <section class="profile-card" *ngIf="screen === 'profile'; else documentsContent">
+        <p class="profile-label">Vor- und Nachname</p>
+        <p class="profile-name">{{ profile?.firstName }} {{ profile?.lastName }}</p>
+        <p class="profile-label">Dokumente</p>
+        <p class="profile-count">{{ documents.length }}</p>
+      </section>
+      <ng-template #documentsContent>
+      <div class="toolbar">
+        <label class="search-box"><span aria-hidden="true">Suche</span><input type="search" name="search" [(ngModel)]="searchTerm" aria-label="Dateien durchsuchen" placeholder="Dateien durchsuchen"></label>
+        <div class="toolbar-actions"><button type="button" class="action-button secondary">Ordner erstellen</button><button type="button" class="action-button primary">Datei hochladen</button></div>
+      </div>
       <div class="document-list" *ngIf="filteredDocuments.length; else emptyDocuments">
         <article class="document-row" *ngFor="let document of filteredDocuments"><span class="file-icon" [ngClass]="'type-' + fileType(document.fileName).toLowerCase()">{{ fileType(document.fileName) }}</span><div class="document-details"><strong>{{ document.name }}</strong><span>{{ document.fileName }}</span></div><p class="document-description">{{ document.description || 'Keine Beschreibung' }}</p><span class="document-folder">{{ document.containingFolder ? 'In Ordner #' + document.containingFolder : 'Ohne Ordner' }}</span></article>
       </div>
       <ng-template #emptyDocuments><div class="empty-state"><p>{{ searchTerm ? 'Keine Treffer' : 'Keine Dateien vorhanden' }}</p></div></ng-template>
+      </ng-template>
     </section>
   </ng-template>
 </main>
