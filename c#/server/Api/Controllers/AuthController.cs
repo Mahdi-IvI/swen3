@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using Api.DTOs;
+using AutoMapper;
 using Api.Services;
 using Bll.@new;
 using Bll.@new.Exceptions;
@@ -14,7 +15,8 @@ namespace Api.Controllers;
 public class AuthController(
     ITokenService tokenService,
     IUserService userService,
-    IPasswordHashingService passwordHashingService)
+    IPasswordHashingService passwordHashingService,
+    IMapper mapper)
     : ControllerBase
 {
     [AllowAnonymous]
@@ -73,7 +75,7 @@ public class AuthController(
         try
         {
             var user = await userService.GetUserByUsernameAsync(username);
-            return Ok(ToProfileDto(user));
+            return Ok(mapper.Map<UserProfileDto>(user));
         }
         catch (UserNotFoundException)
         {
@@ -102,7 +104,7 @@ public class AuthController(
                 profile.LastName,
                 hashedPassword);
 
-            return Ok(ToProfileDto(user));
+            return Ok(mapper.Map<UserProfileDto>(user));
         }
         catch (UserNotFoundException)
         {
@@ -114,14 +116,6 @@ public class AuthController(
     {
         return new TokenDto { Token = tokenService.GenerateToken(user) };
     }
-
-    private static UserProfileDto ToProfileDto(User user) => new()
-    {
-        Username = user.Username,
-        FirstName = user.FirstName,
-        LastName = user.LastName,
-        Email = user.Email
-    };
 
     private string? GetUsername()
     {

@@ -1,4 +1,5 @@
 using Api.DTOs;
+using AutoMapper;
 using Bll.@new;
 using Bll.@new.Exceptions;
 using Models;
@@ -13,7 +14,7 @@ using Microsoft.AspNetCore.Mvc;
 [Route("api/[controller]")]
 [ApiController]
 [Authorize]
-public class FoldersController(IFolderService folderService, ILogger<FoldersController> logger)
+public class FoldersController(IFolderService folderService, ILogger<FoldersController> logger, IMapper mapper)
     : ControllerBase
 {
     [HttpGet]
@@ -27,7 +28,7 @@ public class FoldersController(IFolderService folderService, ILogger<FoldersCont
 
         var folders = await folderService.GetAllFoldersAsync(username);
 
-        return Ok(folders.Select(ToDto));
+        return Ok(mapper.Map<List<FolderDto>>(folders));
     }
 
     [HttpGet("{id:int}")]
@@ -41,7 +42,7 @@ public class FoldersController(IFolderService folderService, ILogger<FoldersCont
 
         try
         {
-            return Ok(ToDto(await folderService.GetFolderByIdAsync(username, id)));
+            return Ok(mapper.Map<FolderDto>(await folderService.GetFolderByIdAsync(username, id)));
         }
         catch (FolderNotFoundException)
         {
@@ -60,10 +61,11 @@ public class FoldersController(IFolderService folderService, ILogger<FoldersCont
 
         try
         {
-            var folder = ToModel(folderDto, username);
+            var folder = mapper.Map<Folder>(folderDto);
+            folder.Username = username;
             folder.Id = 0;
             folder = await folderService.InsertFolderAsync(username, folder);
-            var createdFolder = ToDto(folder);
+            var createdFolder = mapper.Map<FolderDto>(folder);
 
             logger.LogInformation("User {Username} created Folder {FolderId}.", username, createdFolder.Id);
 
@@ -100,9 +102,11 @@ public class FoldersController(IFolderService folderService, ILogger<FoldersCont
 
         try
         {
-            var folder = await folderService.UpdateFolderAsync(username, ToModel(folderDto, username));
+            var folder = mapper.Map<Folder>(folderDto);
+            folder.Username = username;
+            folder = await folderService.UpdateFolderAsync(username, folder);
             logger.LogInformation("User {Username} updated Folder {FolderId}.", username, id);
-            return Ok(ToDto(folder));
+            return Ok(mapper.Map<FolderDto>(folder));
         }
         catch (FolderNotFoundException e)
         {
@@ -138,26 +142,4 @@ public class FoldersController(IFolderService folderService, ILogger<FoldersCont
         return User.FindFirstValue(ClaimTypes.Name);
     }
 
-    static FolderDto ToDto(Folder folder)
-    {
-        return new FolderDto
-        {
-            Id = folder.Id,
-            Name = folder.Name,
-            Description = folder.Description,
-            ContainingFolder = folder.ContainingFolder
-        };
-    }
-
-    static Folder ToModel(FolderDto dto, string username)
-    {
-        return new Folder
-        {
-            Id = dto.Id,
-            Name = dto.Name,
-            Description = dto.Description,
-            ContainingFolder = dto.ContainingFolder,
-            Username = username,
-        };
-    }
 }

@@ -1,5 +1,6 @@
 using System.Text;
 using Api.Exceptions;
+using Api.Mapping;
 using Api.Services;
 using Bll.@new;
 using Dal;
@@ -44,6 +45,11 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     if (!builder.Environment.IsDevelopment()) return; // check for development environment
     options.EnableSensitiveDataLogging();
     options.LogTo(Console.WriteLine, LogLevel.Information);
+});
+
+builder.Services.AddAutoMapper(cfg =>
+{
+    cfg.AddProfile<MapperConfig>();
 });
 
 builder.Services.AddControllers();

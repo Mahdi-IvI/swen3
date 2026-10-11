@@ -1,4 +1,5 @@
 using Api.DTOs;
+using AutoMapper;
 using Bll.@new;
 using Bll.@new.Exceptions;
 using Models;
@@ -13,7 +14,7 @@ using Microsoft.AspNetCore.Mvc;
 [Route("api/[controller]")]
 [ApiController]
 [Authorize]
-public class DocumentsController(IDocumentService documentService, ILogger<DocumentsController> logger)
+public class DocumentsController(IDocumentService documentService, ILogger<DocumentsController> logger, IMapper mapper)
     : ControllerBase
 {
     [HttpGet]
@@ -27,7 +28,7 @@ public class DocumentsController(IDocumentService documentService, ILogger<Docum
 
         var documents = await documentService.FindMatchingDocumentsAsync(username);
 
-        return Ok(documents.Select(ToDto));
+        return Ok(mapper.Map<List<DocumentDto>>(documents));
     }
 
     [HttpGet("search")]
@@ -42,7 +43,7 @@ public class DocumentsController(IDocumentService documentService, ILogger<Docum
 
         var documents = await documentService.FindMatchingDocumentsAsync(username, searchText);
 
-        return Ok(documents.Select(ToDto));
+        return Ok(mapper.Map<List<DocumentDto>>(documents));
     }
 
     [HttpGet("{id:int}")]
@@ -56,7 +57,7 @@ public class DocumentsController(IDocumentService documentService, ILogger<Docum
 
         try
         {
-            return Ok(ToDto(await documentService.GetDocumentByIdAsync(username, id)));
+            return Ok(mapper.Map<DocumentDto>(await documentService.GetDocumentByIdAsync(username, id)));
         }
         catch (DocumentNotFoundException)
         {
@@ -75,10 +76,11 @@ public class DocumentsController(IDocumentService documentService, ILogger<Docum
 
         try
         {
-            var document = ToModel(documentDto, username);
+            var document = mapper.Map<Document>(documentDto);
+            document.Username = username;
             document.Id = 0;
             document = await documentService.InsertDocumentAsync(username, document);
-            var createdDocument = ToDto(document);
+            var createdDocument = mapper.Map<DocumentDto>(document);
 
             logger.LogInformation("User {Username} created Document {DocumentId}.", username, createdDocument.Id);
 
@@ -115,9 +117,11 @@ public class DocumentsController(IDocumentService documentService, ILogger<Docum
 
         try
         {
-            var document = await documentService.UpdateDocumentAsync(username, ToModel(documentDto, username));
+            var document = mapper.Map<Document>(documentDto);
+            document.Username = username;
+            document = await documentService.UpdateDocumentAsync(username, document);
             logger.LogInformation("User {Username} updated Document {DocumentId}.", username, id);
-            return Ok(ToDto(document));
+            return Ok(mapper.Map<DocumentDto>(document));
         }
         catch (DocumentNotFoundException e)
         {
@@ -155,31 +159,5 @@ public class DocumentsController(IDocumentService documentService, ILogger<Docum
     private string? GetUsername()
     {
         return User.FindFirstValue(ClaimTypes.Name);
-    }
-
-    static DocumentDto ToDto(Document document)
-    {
-        return new DocumentDto
-        {
-            Id = document.Id,
-            Name = document.Name,
-            Description = document.Description,
-            FileName = document.FileName,
-            ContainingFolder = document.ContainingFolder
-        };
-    }
-
-    static Document ToModel(DocumentDto dto, string username)
-    {
-        return new Document
-        {
-            Id = dto.Id,
-            Name = dto.Name,
-            Description = dto.Description,
-            FileName = dto.FileName,
-            ContainingFolder = dto.ContainingFolder,
-            Username = username,
-            Summery = ""
-        };
     }
 }
