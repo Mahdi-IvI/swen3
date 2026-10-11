@@ -44,6 +44,7 @@ public class EntityFrameworkDocumentRepository(AppDbContext dbContext) : IDocume
         updateDocument.Name = document.Name;
         updateDocument.Description = document.Description;
         updateDocument.FileName = document.FileName;
+        updateDocument.SizeBytes = document.SizeBytes;
         updateDocument.ContainingFolder = document.ContainingFolder;
         updateDocument.Summery = document.Summery;
 

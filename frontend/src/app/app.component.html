@@ -106,7 +106,9 @@
                     <article class="document-row" *ngFor="let document of filteredDocuments"><span class="file-icon"
                                                                                                    [ngClass]="'type-' + fileType(document.fileName).toLowerCase()">{{ fileType(document.fileName) }}</span>
                         <div class="document-details">
-                            <strong>{{ document.name }}</strong><span>{{ document.fileName }}</span></div>
+                            <strong>{{ document.name }}</strong><span>{{ document.fileName }}</span>
+                            <span class="document-metadata">{{ fileType(document.fileName) }} · {{ formatFileSize(document.sizeBytes) }}</span>
+                        </div>
                         <p class="document-description">{{ document.description || 'Keine Beschreibung' }}</p><span
                                 class="document-folder">{{ document.containingFolder ? 'In Ordner #' + document.containingFolder : 'Ohne Ordner' }}</span>
                     </article>

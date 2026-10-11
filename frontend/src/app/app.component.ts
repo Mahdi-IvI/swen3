@@ -9,6 +9,7 @@ interface DocumentItem {
     name: string;
     description: string;
     fileName: string;
+    sizeBytes?: number | null;
     containingFolder: number | null;
 }
 
@@ -223,6 +224,19 @@ export class AppComponent {
         if (extension === 'ppt' || extension === 'pptx') return 'PPTX';
         if (extension === 'txt') return 'TXT';
         return extension?.toUpperCase() || 'DATEI';
+    }
+
+    formatFileSize(sizeBytes: number | null | undefined): string {
+        if (sizeBytes == null || !Number.isFinite(sizeBytes) || sizeBytes < 0) return 'Größe nicht verfügbar';
+        if (sizeBytes < 1024) return `${sizeBytes} Bytes`;
+        const units = ['KB', 'MB', 'GB', 'TB'];
+        let size = sizeBytes / 1024;
+        let unit = 0;
+        while (size >= 1024 && unit < units.length - 1) {
+            size /= 1024;
+            unit++;
+        }
+        return `${new Intl.NumberFormat('de-DE', {maximumFractionDigits: 1}).format(size)} ${units[unit]}`;
     }
 
     private async openDocuments(token: string): Promise<void> {

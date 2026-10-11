@@ -9,6 +9,7 @@ public class Document
     public required string Name { get; set; }
     public required string Description { get; set; }
     public required string FileName { get; set; }
+    public long? SizeBytes { get; set; }
     [NotMapped] public string Summery { get; set; } = string.Empty;
     public int? ContainingFolder { get; set; }
 }

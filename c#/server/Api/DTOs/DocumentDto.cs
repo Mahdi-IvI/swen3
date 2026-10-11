@@ -12,5 +12,7 @@ public class DocumentDto
 
     [Required] public required string FileName { get; set; }
 
+    public long? SizeBytes { get; set; }
+
     public int? ContainingFolder { get; set; }
 }
