@@ -67,3 +67,14 @@ h1 { margin: 0; font: 700 32px 'Manrope', sans-serif; letter-spacing: -.04em; }
 .document-description { margin: 0; }
 .document-folder { padding: 6px 9px; border-radius: 20px; background: #f3f6f5; white-space: nowrap; }
 .empty-state { display: grid; min-height: 180px; margin-top: 16px; place-items: center; border: 1px dashed #d3dfda; border-radius: 14px; background: #ffffff9c; color: #78868b; }
+.folder-navigation { display: flex; align-items: center; gap: 12px; margin-top: 20px; }
+.folder-dialog { width: min(520px, calc(100% - 32px)); max-height: calc(100dvh - 32px); padding: 24px; border: 1px solid #e5ece9; border-radius: 14px; background: white; color: #192b36; box-shadow: 0 18px 50px #234e3d30; }
+.folder-dialog::backdrop { background: #192b3680; }
+.folder-form { display: grid; gap: 12px; }
+.folder-form h2 { margin: 0 0 8px; font: 700 22px 'Manrope', sans-serif; }
+.folder-open { flex: 1; margin: 0; text-align: left; overflow-wrap: anywhere; }
+button:disabled { opacity: .6; cursor: default; transform: none; }
+@media (max-width: 600px) {
+  .folder-row { flex-wrap: wrap; }
+  .folder-row .toolbar-actions { width: 100%; }
+}
