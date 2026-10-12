@@ -3,6 +3,8 @@ import {HttpClient, HttpErrorResponse, HttpHeaders} from '@angular/common/http';
 import {CommonModule} from '@angular/common';
 import {FormsModule, NgForm, NgModel} from '@angular/forms';
 import {firstValueFrom} from 'rxjs';
+import {UserProfileComponent} from './user-profile.component';
+import {DocumentPropertiesComponent} from './document-properties.component';
 
 interface DocumentItem {
     id: number;
@@ -34,7 +36,7 @@ type Screen = 'login' | 'register' | 'documents' | 'document-detail' | 'profile'
 @Component({
     selector: 'app-root',
     standalone: true,
-    imports: [CommonModule, FormsModule],
+    imports: [CommonModule, FormsModule, UserProfileComponent, DocumentPropertiesComponent],
     templateUrl: './app.component.html'
 })
 export class AppComponent {

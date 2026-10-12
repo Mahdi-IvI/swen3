@@ -113,32 +113,15 @@
                     <button type="button" class="logout-button" (click)="logout()">Abmelden</button>
                 </div>
             </header>
-            <section class="profile-card" *ngIf="screen === 'profile'">
-                <p class="profile-label">Vor- und Nachname</p>
-                <p class="profile-name">{{ profile?.firstName }} {{ profile?.lastName }}</p>
-                <p class="profile-label">Dokumente</p>
-                <p class="profile-count">{{ documents.length }}</p>
-            </section>
-            <section class="profile-card document-detail-card" *ngIf="screen === 'document-detail'">
-                <p *ngIf="detailBusy" role="status">Dokumentdetails werden geladen...</p>
-                <p class="error-message" *ngIf="error" role="alert">{{ error }}</p>
-                <dl class="document-properties" *ngIf="selectedDocument as document">
-                    <dt>Name</dt>
-                    <dd>{{ document.name }}</dd>
-                    <dt>Beschreibung</dt>
-                    <dd>{{ document.description }}</dd>
-                    <dt>Dateiname</dt>
-                    <dd>{{ document.fileName }}</dd>
-                    <dt>Dateityp</dt>
-                    <dd>{{ fileType(document.fileName) }}</dd>
-                    <ng-container *ngIf="formatFileSize(document.sizeBytes) as size">
-                        <dt>Größe</dt>
-                        <dd>{{ size }}</dd>
-                    </ng-container>
-                    <dt>Ordner</dt>
-                    <dd>{{ selectedDocumentFolderName }}</dd>
-                </dl>
-            </section>
+            <app-user-profile *ngIf="screen === 'profile'"
+                              [firstName]="profile?.firstName ?? ''"
+                              [lastName]="profile?.lastName ?? ''"
+                              [documentCount]="documents.length" />
+            <app-document-properties *ngIf="screen === 'document-detail'"
+                                     [document]="selectedDocument"
+                                     [folderName]="selectedDocumentFolderName"
+                                     [busy]="detailBusy"
+                                     [error]="error" />
             <ng-container *ngIf="screen === 'documents'">
                 <div class="toolbar">
                     <label class="search-box"><span aria-hidden="true">Suche</span><input type="search" name="search"

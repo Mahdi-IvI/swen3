@@ -1,0 +1,20 @@
+<section class="profile-card document-detail-card">
+    <p *ngIf="busy" role="status">Dokumentdetails werden geladen...</p>
+    <p class="error-message" *ngIf="error" role="alert">{{ error }}</p>
+    <dl class="document-properties" *ngIf="document as item">
+        <dt>Name</dt>
+        <dd>{{ item.name }}</dd>
+        <dt>Beschreibung</dt>
+        <dd>{{ item.description }}</dd>
+        <dt>Dateiname</dt>
+        <dd>{{ item.fileName }}</dd>
+        <dt>Dateityp</dt>
+        <dd>{{ fileType(item.fileName) }}</dd>
+        <ng-container *ngIf="formatFileSize(item.sizeBytes) as size">
+            <dt>Größe</dt>
+            <dd>{{ size }}</dd>
+        </ng-container>
+        <dt>Ordner</dt>
+        <dd>{{ folderName }}</dd>
+    </dl>
+</section>
