@@ -1,7 +1,7 @@
 import {Component, ElementRef, ViewChild} from '@angular/core';
 import {HttpClient, HttpErrorResponse, HttpHeaders} from '@angular/common/http';
 import {CommonModule} from '@angular/common';
-import {FormsModule} from '@angular/forms';
+import {FormsModule, NgForm, NgModel} from '@angular/forms';
 import {firstValueFrom} from 'rxjs';
 
 interface DocumentItem {
@@ -29,7 +29,7 @@ interface UserProfile {
     lastName: string;
 }
 
-type Screen = 'login' | 'register' | 'documents' | 'profile';
+type Screen = 'login' | 'register' | 'documents' | 'document-detail' | 'profile';
 
 @Component({
     selector: 'app-root',
@@ -39,6 +39,7 @@ type Screen = 'login' | 'register' | 'documents' | 'profile';
 })
 export class AppComponent {
     @ViewChild('folderDialog', {static: true}) private folderDialog!: ElementRef<HTMLDialogElement>;
+    @ViewChild('documentDialog', {static: true}) private documentDialog!: ElementRef<HTMLDialogElement>;
     private readonly apiUrl = '/api';
     private token = '';
     screen: Screen = 'login';
@@ -48,13 +49,21 @@ export class AppComponent {
     lastName = '';
     email = '';
     error = '';
+    authBusy = false;
     documents: DocumentItem[] = [];
+    selectedDocument: DocumentItem | null = null;
+    detailBusy = false;
     folders: FolderItem[] = [];
     currentFolderId: number | null = null;
     editingFolderId: number | null = null;
     folderName = '';
     folderDescription = '';
     folderBusy = false;
+    editingDocument: DocumentItem | null = null;
+    documentName = '';
+    documentDescription = '';
+    documentFileName = '';
+    documentBusy = false;
     profile: UserProfile | null = null;
     searchTerm = '';
 
@@ -76,6 +85,34 @@ export class AppComponent {
 
     get currentFolder(): FolderItem | undefined {
         return this.folders.find((folder) => folder.id === this.currentFolderId);
+    }
+
+    get selectedDocumentFolderName(): string {
+        const folderId = this.selectedDocument?.containingFolder;
+        if (folderId == null) return 'Hauptordner';
+        return this.folders.find((folder) => folder.id === folderId)?.name ?? `Ordner #${folderId}`;
+    }
+
+    async showDocumentDetails(id: number): Promise<void> {
+        if (this.detailBusy || !this.token) return;
+        this.selectedDocument = null;
+        this.error = '';
+        this.screen = 'document-detail';
+        this.detailBusy = true;
+        try {
+            const document = await firstValueFrom(this.http.get<DocumentItem>(`${this.apiUrl}/documents/${id}`, {
+                headers: new HttpHeaders({Authorization: `Bearer ${this.token}`})
+            }));
+            if (this.screen === 'document-detail') this.selectedDocument = document;
+        } catch (error) {
+            if (this.screen === 'document-detail') {
+                this.error = error instanceof HttpErrorResponse && error.status === 404
+                    ? 'Dokument wurde nicht gefunden.'
+                    : 'Dokumentdetails konnten nicht geladen werden.';
+            }
+        } finally {
+            this.detailBusy = false;
+        }
     }
 
     openFolder(id: number | null): void {
@@ -143,6 +180,72 @@ export class AppComponent {
         }
     }
 
+    showDocumentForm(document?: DocumentItem): void {
+        this.editingDocument = document ?? null;
+        this.documentName = document?.name ?? '';
+        this.documentDescription = document?.description ?? '';
+        this.documentFileName = document?.fileName ?? '';
+        this.error = '';
+        this.documentDialog.nativeElement.showModal();
+    }
+
+    cancelDocumentForm(): void {
+        this.documentDialog.nativeElement.close();
+        this.editingDocument = null;
+        this.documentName = '';
+        this.documentDescription = '';
+        this.documentFileName = '';
+    }
+
+    async saveDocument(): Promise<void> {
+        if (this.documentBusy || !this.documentName.trim() || !this.documentDescription.trim()
+            || (!this.editingDocument && !this.documentFileName.trim())) return;
+        this.documentBusy = true;
+        this.error = '';
+        const isNew = this.editingDocument === null;
+        const document = {
+            ...(this.editingDocument ?? {
+                id: 0,
+                fileName: this.documentFileName.trim(),
+                sizeBytes: null,
+                containingFolder: this.currentFolderId
+            }),
+            name: this.documentName.trim(),
+            description: this.documentDescription.trim()
+        };
+        try {
+            const options = {headers: new HttpHeaders({Authorization: `Bearer ${this.token}`})};
+            const saved = await firstValueFrom(isNew
+                ? this.http.post<DocumentItem>(`${this.apiUrl}/documents`, document, options)
+                : this.http.put<DocumentItem>(`${this.apiUrl}/documents/${document.id}`, document, options));
+            this.documents = isNew
+                ? [...this.documents, saved]
+                : this.documents.map((item) => item.id === saved.id ? saved : item);
+            if (isNew) this.searchTerm = '';
+            this.cancelDocumentForm();
+        } catch {
+            this.error = 'Dokument konnte nicht gespeichert werden.';
+        } finally {
+            this.documentBusy = false;
+        }
+    }
+
+    async deleteDocument(document: DocumentItem): Promise<void> {
+        if (this.documentBusy || !window.confirm(`Dokument "${document.name}" löschen?`)) return;
+        this.documentBusy = true;
+        this.error = '';
+        try {
+            await firstValueFrom(this.http.delete(`${this.apiUrl}/documents/${document.id}`, {
+                headers: new HttpHeaders({Authorization: `Bearer ${this.token}`})
+            }));
+            this.documents = this.documents.filter((item) => item.id !== document.id);
+        } catch {
+            this.error = 'Dokument konnte nicht gelöscht werden.';
+        } finally {
+            this.documentBusy = false;
+        }
+    }
+
     showLogin(): void {
         this.screen = 'login';
         this.error = '';
@@ -153,7 +256,23 @@ export class AppComponent {
         this.error = '';
     }
 
-    async login(): Promise<void> {
+    validationMessage(field: NgModel, label: string): string {
+        const errors = field.errors;
+        if (errors?.['required']) return `${label} ist erforderlich.`;
+        if (errors?.['email']) return 'Bitte eine gültige E-Mail-Adresse eingeben.';
+        if (errors?.['minlength']) return `${label} muss mindestens ${errors['minlength'].requiredLength} Zeichen enthalten.`;
+        if (errors?.['maxlength']) return `${label} darf höchstens ${errors['maxlength'].requiredLength} Zeichen enthalten.`;
+        if (errors?.['pattern']) return `${label} darf nicht nur aus Leerzeichen bestehen.`;
+        return '';
+    }
+
+    async login(form: NgForm): Promise<void> {
+        if (this.authBusy) return;
+        if (form.invalid) {
+            form.control.markAllAsTouched();
+            return;
+        }
+        this.authBusy = true;
         this.error = '';
         try {
             const response = await firstValueFrom(this.http.post<TokenResponse>(`${this.apiUrl}/auth/login`, {
@@ -164,10 +283,18 @@ export class AppComponent {
             this.error = error instanceof HttpErrorResponse && error.status === 0
                 ? 'Backend nicht erreichbar.'
                 : 'Benutzername oder Passwort ist falsch.';
+        } finally {
+            this.authBusy = false;
         }
     }
 
-    async register(): Promise<void> {
+    async register(form: NgForm): Promise<void> {
+        if (this.authBusy) return;
+        if (form.invalid) {
+            form.control.markAllAsTouched();
+            return;
+        }
+        this.authBusy = true;
         this.error = '';
         try {
             const response = await firstValueFrom(this.http.post<TokenResponse>(`${this.apiUrl}/auth/register`, {
@@ -184,16 +311,20 @@ export class AppComponent {
                 : error instanceof HttpErrorResponse && error.status === 409
                     ? 'Benutzername oder E-Mail-Adresse existiert bereits.'
                     : 'Registrierung fehlgeschlagen.';
+        } finally {
+            this.authBusy = false;
         }
     }
 
     logout(): void {
         this.token = '';
         this.documents = [];
+        this.selectedDocument = null;
         this.folders = [];
         this.currentFolderId = null;
         this.searchTerm = '';
         this.cancelFolderForm();
+        this.cancelDocumentForm();
         this.profile = null;
         this.username = '';
         this.password = '';
@@ -214,6 +345,8 @@ export class AppComponent {
 
     showDocuments(): void {
         this.screen = 'documents';
+        this.selectedDocument = null;
+        this.error = '';
     }
 
     fileType(fileName: string): string {
@@ -227,7 +360,7 @@ export class AppComponent {
     }
 
     formatFileSize(sizeBytes: number | null | undefined): string {
-        if (sizeBytes == null || !Number.isFinite(sizeBytes) || sizeBytes < 0) return 'Größe nicht verfügbar';
+        if (sizeBytes == null || !Number.isFinite(sizeBytes) || sizeBytes < 0) return '';
         if (sizeBytes < 1024) return `${sizeBytes} Bytes`;
         const units = ['KB', 'MB', 'GB', 'TB'];
         let size = sizeBytes / 1024;
