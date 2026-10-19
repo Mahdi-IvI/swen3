@@ -2,7 +2,7 @@ using Api.DTOs;
 using AutoMapper;
 using Models;
 
-namespace Api.Mapping;
+namespace Api;
 
 public class MapperConfig : Profile
 {

@@ -10,6 +10,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Models", "Models\Models.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{67363615-CAFF-4F99-9DE5-D32DC716B1B1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OcrWorker", "OcrWorker\OcrWorker.csproj", "{5F6DD273-7A22-4B82-9947-CADAEF134E79}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -80,6 +82,18 @@ Global
 		{67363615-CAFF-4F99-9DE5-D32DC716B1B1}.Release|x64.Build.0 = Release|Any CPU
 		{67363615-CAFF-4F99-9DE5-D32DC716B1B1}.Release|x86.ActiveCfg = Release|Any CPU
 		{67363615-CAFF-4F99-9DE5-D32DC716B1B1}.Release|x86.Build.0 = Release|Any CPU
+		{5F6DD273-7A22-4B82-9947-CADAEF134E79}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5F6DD273-7A22-4B82-9947-CADAEF134E79}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5F6DD273-7A22-4B82-9947-CADAEF134E79}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{5F6DD273-7A22-4B82-9947-CADAEF134E79}.Debug|x64.Build.0 = Debug|Any CPU
+		{5F6DD273-7A22-4B82-9947-CADAEF134E79}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{5F6DD273-7A22-4B82-9947-CADAEF134E79}.Debug|x86.Build.0 = Debug|Any CPU
+		{5F6DD273-7A22-4B82-9947-CADAEF134E79}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5F6DD273-7A22-4B82-9947-CADAEF134E79}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5F6DD273-7A22-4B82-9947-CADAEF134E79}.Release|x64.ActiveCfg = Release|Any CPU
+		{5F6DD273-7A22-4B82-9947-CADAEF134E79}.Release|x64.Build.0 = Release|Any CPU
+		{5F6DD273-7A22-4B82-9947-CADAEF134E79}.Release|x86.ActiveCfg = Release|Any CPU
+		{5F6DD273-7A22-4B82-9947-CADAEF134E79}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

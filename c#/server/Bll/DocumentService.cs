@@ -1,10 +1,15 @@
 using Bll.@new.Exceptions;
+using Bll.@new.Messaging;
 using Dal;
 using Models;
+using Models.Messaging;
 
 namespace Bll.@new;
 
-public class DocumentService(IDocumentRepository documentRepository, IFolderRepository folderRepository) : IDocumentService
+public class DocumentService(
+    IDocumentRepository documentRepository,
+    IFolderRepository folderRepository,
+    IDocumentMessagePublisher messagePublisher) : IDocumentService
 {
     public async Task<Document> InsertDocumentAsync(string username, Document newDocument)
     {
@@ -20,6 +25,9 @@ public class DocumentService(IDocumentRepository documentRepository, IFolderRepo
                 $"Document with ID '{newDocument.Id}' already exists for user '{username}'.",
                 e);
         }
+
+        await messagePublisher.PublishAsync(
+            new ProcessDocumentMessage(Guid.NewGuid(), newDocument.Id, newDocument.FileName));
 
         return newDocument;
     }

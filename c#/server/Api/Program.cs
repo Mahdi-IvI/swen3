@@ -1,13 +1,16 @@
 using System.Text;
+using Api;
 using Api.Exceptions;
-using Api.Mapping;
+using Api.Messaging;
 using Api.Services;
 using Bll.@new;
+using Bll.@new.Messaging;
 using Dal;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
+using Models.Messaging;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -28,6 +31,9 @@ builder.Services
 
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+
+builder.Services.Configure<RabbitMqOptions>(builder.Configuration.GetSection("RabbitMQ"));
+builder.Services.AddScoped<IDocumentMessagePublisher, RabbitMqDocumentMessagePublisher>();
 
 builder.Services.AddScoped<IPasswordHashingService, PasswordHashingService>();
 builder.Services.AddScoped<ITokenService, TokenService>();

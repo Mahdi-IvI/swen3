@@ -1,7 +1,9 @@
 using Bll.@new;
 using Bll.@new.Exceptions;
+using Bll.@new.Messaging;
 using Dal;
 using Models;
+using Models.Messaging;
 using Moq;
 using NUnit.Framework;
 
@@ -25,9 +27,40 @@ public class DocumentServiceTests
         var repository = CreateDocumentRepository();
         repository.Setup(r => r.InsertDocumentAsync(It.IsAny<string>(), It.IsAny<Document>()))
             .ThrowsAsync(new DuplicateKeyException("duplicate"));
-        var service = CreateService(documentRepository: repository);
+        var publisher = new Mock<IDocumentMessagePublisher>();
+        var service = CreateService(documentRepository: repository, messagePublisher: publisher);
 
         Assert.ThrowsAsync<DocumentAlreadyExistsException>(() =>
+            service.InsertDocumentAsync("mahdi", CreateDocument()));
+        publisher.Verify(p => p.PublishAsync(It.IsAny<ProcessDocumentMessage>()), Times.Never);
+    }
+
+    [Test]
+    public async Task InsertDocument_PublishesTheSavedDocument()
+    {
+        var repository = CreateDocumentRepository();
+        repository.Setup(r => r.InsertDocumentAsync("mahdi", It.IsAny<Document>()))
+            .Callback<string, Document>((_, document) => document.Id = 42)
+            .Returns(Task.CompletedTask);
+        var publisher = new Mock<IDocumentMessagePublisher>();
+        var service = CreateService(documentRepository: repository, messagePublisher: publisher);
+
+        await service.InsertDocumentAsync("mahdi", CreateDocument(0));
+
+        publisher.Verify(p => p.PublishAsync(It.Is<ProcessDocumentMessage>(message =>
+            message.DocumentId == 42 && message.FileName == "name" && message.MessageId != Guid.Empty)),
+            Times.Once);
+    }
+
+    [Test]
+    public void InsertDocument_WhenPublishingFails_ReportsTheFailure()
+    {
+        var publisher = new Mock<IDocumentMessagePublisher>();
+        publisher.Setup(p => p.PublishAsync(It.IsAny<ProcessDocumentMessage>()))
+            .ThrowsAsync(new InvalidOperationException("Broker unavailable"));
+        var service = CreateService(messagePublisher: publisher);
+
+        Assert.ThrowsAsync<InvalidOperationException>(() =>
             service.InsertDocumentAsync("mahdi", CreateDocument()));
     }
 
@@ -148,11 +181,13 @@ public class DocumentServiceTests
 
     private static DocumentService CreateService(
         Mock<IDocumentRepository>? documentRepository = null,
-        Mock<IFolderRepository>? folderRepository = null)
+        Mock<IFolderRepository>? folderRepository = null,
+        Mock<IDocumentMessagePublisher>? messagePublisher = null)
     {
         return new DocumentService(
             (documentRepository ?? CreateDocumentRepository()).Object,
-            (folderRepository ?? new Mock<IFolderRepository>()).Object);
+            (folderRepository ?? new Mock<IFolderRepository>()).Object,
+            (messagePublisher ?? new Mock<IDocumentMessagePublisher>()).Object);
     }
 
     private static Mock<IDocumentRepository> CreateDocumentRepository(List<Document>? documents = null)
