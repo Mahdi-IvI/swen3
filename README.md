@@ -19,12 +19,15 @@ In Development mode, the API creates a demo account on startup if it does not al
 
 ## Run with Docker Compose
 
-From the repository root, set a JWT signing secret of at least 32 characters, then start both containers:
+From the repository root, create a local environment file:
 
 ```bash
-export DSM_JWT_SECRET="$(openssl rand -hex 32)"
-docker compose up --build
+cp .env.example .env
 ```
+
+Generate a secret with `openssl rand -hex 32`, then paste it after `DSM_JWT_SECRET=` in `.env`. Keep the same value between runs. The `.env` file is ignored by Git; only the empty `.env.example` template is committed.
+
+Start the containers with `docker compose up --build`. Compose reads `.env` automatically and passes `DSM_JWT_SECRET` to the API as `Jwt__SecretKey`. An exported `DSM_JWT_SECRET` overrides the value in `.env`. Compose reports an error if the secret is missing or empty; the API requires at least 32 characters.
 
 The API is at `http://localhost:5176` and Swagger UI is at `http://localhost:5176/swagger`. Run `docker compose down` to stop the containers; the database volume remains available for the next run.
 
@@ -34,7 +37,7 @@ From the repository root:
 
 1. Create `c#/server/Api/appsettings.Local.json` from the example.
 2. In the new file, replace the PostgreSQL password placeholder with the password in `docker-compose.yml` (`dsmpassword` for the provided development setup). Replace the JWT secret placeholder with a secret of at least 32 characters. The local settings file is ignored by Git.
-3. Start PostgreSQL:
+3. Ensure the repository-root `.env` file is configured as described above, then start PostgreSQL:
 
    ```bash
    docker compose up -d postgres
